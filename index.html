@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>간사이 단풍 여행 지도 (여유 버전) · 2026.11.22-26</title>
+<meta name="description" content="오사카·교토 4박 5일 단풍 여행 일정 지도 (여유 버전)">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #fbfaf8; --fg: #1d1b19; --muted: #77716b; --line: #e8e4df; --card: #ffffff;
+    --accent: #c2410c; --radius: 12px;
+    --d1: #e0662f; --d2: #d4a017; --d3: #c0392b; --d4: #2f855a; --d5: #3b6fb6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", system-ui, sans-serif; }
+  .app { display: grid; grid-template-columns: 380px minmax(0, 1fr); overflow: hidden; height: 100vh; height: 100dvh; }
+  aside { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--line); background: var(--bg); min-height: 0; }
+  header { padding: 20px 20px 12px; }
+  header h1 { margin: 0; font-size: 19px; letter-spacing: -0.02em; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 20px 12px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: none; border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px;
+    padding: 6px 12px; font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+  .tab.on { color: #fff; border-color: transparent; background: var(--c, var(--fg)); }
+  .daysum { padding: 0 20px 12px; display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+  .daysum b { font-size: 16px; letter-spacing: -0.01em; }
+  .daysum span { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .list { flex: 1; overflow-y: auto; padding: 4px 12px 24px; min-height: 0; }
+  .stop { display: grid; grid-template-columns: 44px 40px 1fr; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; cursor: pointer; }
+  .stop:hover { background: #f1eee9; }
+  .stop.sel { background: #f1eee9; box-shadow: inset 3px 0 0 var(--c); }
+  .stop .t { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+  .stop .th { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #ece8e2; display: grid; place-items: center; font-size: 11px; color: var(--muted); }
+  .stop .nm { font-weight: 600; font-size: 14px; line-height: 1.3; }
+  .stop .nt { font-size: 12px; color: var(--muted); line-height: 1.35; }
+  .leg { display: grid; grid-template-columns: 44px 40px 1fr; gap: 10px; padding: 0 8px; }
+  .leg .bar { justify-self: center; width: 2px; min-height: 22px; background: var(--c); opacity: .35; }
+  .leg.train .bar { background: repeating-linear-gradient(var(--c) 0 4px, transparent 4px 7px); opacity: .55; }
+  .leg.taxi .bar { background: repeating-linear-gradient(var(--c) 0 2px, transparent 2px 5px); opacity: .55; }
+  .leg .lt { font-size: 11.5px; color: var(--muted); align-self: center; padding: 2px 0; }
+  .vias { margin-top: 3px; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; }
+  .via { font-size: 11px; padding: 1px 6px; border-radius: 5px; background: #fff; border: 1px solid var(--line); color: var(--fg); cursor: pointer; }
+  .via:hover { border-color: var(--c); }
+  .arr { color: var(--muted); font-size: 11px; }
+  .stop.future, .leg.future { opacity: .4; }
+  .stop.future:hover { opacity: .8; }
+  .reset { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12px; cursor: pointer; color: var(--fg); }
+  .note { margin: 8px 8px 0; padding: 10px 12px; border-radius: 10px; background: #f4f1ec; font-size: 12px; color: var(--muted); }
+  #map { height: 100%; width: 100%; background: #eef0f2; }
+  #map .leaflet-tile-pane { filter: saturate(.7); }
+  #map.low .pin .lb { display: none; }
+  #map.low .pin.hotel .lb, #map.low .pin.sel .lb, #map.low .pin:hover .lb { display: inline; }
+  main { position: relative; min-height: 0; }
+  .legend { position: absolute; left: 12px; bottom: 12px; z-index: 500; background: rgba(255,255,255,.92); border-radius: 10px; padding: 7px 10px;
+    font-size: 11px; color: var(--muted); display: flex; gap: 12px; align-items: center; }
+  .legend i { display: inline-block; width: 18px; height: 0; border-top: 2.5px solid #777; vertical-align: middle; margin-right: 4px; }
+  .legend i.d { border-top-style: dashed; } .legend i.o { border-top-style: dotted; }
+
+  /* markers */
+  .pin { display: flex; align-items: center; gap: 5px; transform: translate(-16px, -16px); white-space: nowrap; pointer-events: auto; }
+  .pin .ph { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--c); background: #fff center/cover no-repeat; box-shadow: 0 1px 4px rgba(0,0,0,.25); flex: none; }
+  .pin .no { position: absolute; right: -6px; top: -6px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--c); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; line-height: 1; }
+  .pin .lb { background: rgba(255,255,255,.94); border-radius: 6px; padding: 1px 6px; font-size: 11.5px; font-weight: 600; color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+  .pin.dot .ph { width: 14px; height: 14px; border-width: 3px; background: #fff; margin: 9px; }
+  .pin.dot .no { display: none; }
+  .pin.dot .lb { font-weight: 500; color: var(--muted); }
+  .pin.hotel .ph { border-radius: 8px; }
+  .pin.sta { transform: translate(-7px, -7px); gap: 3px; }
+  .pin.sta .ph { width: 10px; height: 10px; border-width: 2.5px; background: #fff; box-shadow: none; margin: 2px; }
+  .pin.sta .no { display: none; }
+  .pin.sta .lb { font-size: 10.5px; font-weight: 500; color: var(--muted); background: rgba(255,255,255,.85); padding: 0 4px; box-shadow: none; }
+  #map.mid .pin.sta .lb { display: none; }
+  #map.mid .pin.sta:hover .lb, #map.mid .pin.sta.sel .lb { display: inline; }
+  .pin.sel .ph { transform: scale(1.25); box-shadow: 0 0 0 4px rgba(255,255,255,.9), 0 2px 8px rgba(0,0,0,.35); }
+  .pin.dim { opacity: .35; }
+  .leaflet-div-icon { background: none; border: 0; }
+
+  /* detail */
+  .detail { position: absolute; top: 12px; right: 12px; z-index: 600; width: 340px; max-height: calc(100% - 24px); overflow-y: auto;
+    background: var(--card); border-radius: 14px; box-shadow: 0 6px 30px rgba(0,0,0,.18); display: none; }
+  .detail.open { display: block; animation: pop .22s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .detail img { width: 100%; aspect-ratio: 3/2; object-fit: cover; display: block; border-radius: 14px 14px 0 0; }
+  .detail .bd { padding: 14px 16px 16px; }
+  .detail .x { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 16px; cursor: pointer; line-height: 30px; }
+  .detail h2 { margin: 0; font-size: 18px; letter-spacing: -0.02em; }
+  .detail .jp { color: var(--muted); font-size: 12.5px; margin-left: 6px; font-weight: 400; }
+  .detail .when { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px; }
+  .detail .when span { font-size: 11.5px; padding: 2px 8px; border-radius: 6px; background: #f4f1ec; color: var(--fg); font-variant-numeric: tabular-nums; }
+  .detail p { margin: 0 0 10px; font-size: 13.5px; }
+  .detail ul { margin: 0 0 12px; padding-left: 18px; font-size: 13px; }
+  .detail li { margin: 2px 0; }
+  .detail .kv { display: grid; grid-template-columns: 84px 1fr; gap: 4px 10px; font-size: 12.5px; margin-bottom: 12px; }
+  .detail .kv div:nth-child(odd) { color: var(--muted); }
+  .detail a.btn { display: inline-block; font-size: 12.5px; text-decoration: none; color: #fff; background: var(--fg); padding: 7px 12px; border-radius: 8px; margin-right: 6px; }
+  .detail a.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+
+  @media (max-width: 760px) {
+    .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 48vh 1fr; grid-template-rows: 48dvh 1fr; }
+    main { order: 1; } aside { order: 2; border-right: 0; border-top: 1px solid var(--line); }
+    header { padding: 12px 16px 6px; } header h1 { font-size: 16px; }
+    .tabs { padding: 4px 16px 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .tabs::-webkit-scrollbar { display: none; } .daysum { padding: 0 16px 8px; }
+    .detail { position: fixed; top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 72vh; border-radius: 16px 16px 0 0; }
+    .detail img { border-radius: 16px 16px 0 0; aspect-ratio: 16/9; }
+    .legend { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <header>
+      <h1>간사이 단풍 여행</h1>
+      <p>2026.11.22 (일) – 11.26 (목) · 오사카·교토 · 숙소 KOKO HOTEL 난바 센니치마에</p>
+    </header>
+    <div class="tabs" id="tabs"></div>
+    <div class="daysum" id="daysum"></div>
+    <div class="list" id="list"></div>
+  </aside>
+  <main>
+    <div id="map"></div>
+    <div class="legend"><span><i></i>도보</span><span><i class="d"></i>전철</span><span><i class="o"></i>택시</span><span>선은 직선 연결</span></div>
+    <div class="detail" id="detail"></div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const P = {
+  kix: { name:'간사이국제공항 T1', jp:'関西国際空港', ll:[34.43593,135.24341], type:'dot',
+    desc:'입국하고 나가는 공항. 공항역에서 난카이 라피트를 타면 난바까지 바로 감.',
+    tips:['라피트로 난바까지 약 34~39분','출국 날은 출발 2시간 반 전쯤 도착 목표'] },
+  namba: { name:'난카이 난바역', jp:'なんば駅', ll:[34.6628,135.5016], type:'dot',
+    desc:'공항 열차(라피트)가 출발하고 도착하는 역. KOKO 호텔까지 걸어서 10분 정도.',
+    tips:['라피트는 전석 지정석이라 표를 미리 사두면 편함'] },
+  koko: { name:'KOKO HOTEL 난바 센니치마에', jp:'KOKO HOTEL Osaka Namba Sennichimae', ll:[34.66731,135.50532], type:'hotel', img:'img/koko.jpg',
+    desc:'4박 내내 묵는 숙소. 도톤보리 바로 옆이고 닛폰바시역에서 100m라 교토 가는 지하철 타기도 편함.',
+    kv:[['등급','3성급, 평점 8.7'],['방','스탠다드 트윈 (싱글침대 2개, 욕조)'],['체크인','15:00부터'],['체크아웃','11:00까지'],['요금','4박 ₩587,292 (1박 약 14.7만)'],['취소','11/21 전까지 무료, 결제는 11/19'],['조식','₩15,114 추가 (뷔페)'],['가까운 역','닛폰바시역 100m · 난바역 700m'],['점수','위치 9.5 · 편안함 9.1 · 청결 9.0']],
+    tips:['첫날 체크인 전에 짐 맡길 수 있음 (수하물 보관)','10/27 부킹닷컴 기준이라 예약할 때 가격 다시 확인'],
+    link:'https://www.booking.com/hotel/jp/koko-osaka-namba-sennichimae.ko.html' },
+  shinsaibashi: { name:'신사이바시스지', jp:'心斎橋筋商店街', ll:[34.67422,135.50137], img:'img/shinsaibashi.jpg',
+    desc:'지붕 덮인 긴 상점가. 드럭스토어, 브랜드, 잡화가 쭉 이어지고 남쪽 끝이 도톤보리랑 붙어 있음. 비 와도 상관없음.',
+    tips:['면세는 한 가게에서 하루 5,000엔 이상 사고 여권 보여주면 됨','점심은 근처에서 오코노미야키나 쿠시카츠'] },
+  dotonbori: { name:'도톤보리', jp:'道頓堀', ll:[34.66893,135.50105], img:'img/dotonbori.jpg',
+    desc:'운하 따라 네온 간판이 빽빽한 먹자거리. 글리코 간판, 타코야키, 쿠시카츠, 돈키호테. 호텔에서 걸어서 5분.',
+    tips:['밤에 가야 간판 불빛이 제대로 보임','돈키호테 도톤보리점은 밤늦게까지 영업'] },
+  osakajo: { name:'오사카성 공원', jp:'大阪城公園', ll:[34.68731,135.52585], img:'img/osakajo.jpg', leaf:1,
+    desc:'천수각을 둘러싼 넓은 공원. 11월 말엔 은행나무 노랑이랑 단풍 빨강이 같이 보임. 천수각 안은 박물관이고 꼭대기가 전망대.',
+    tips:['공원이 넓어서 천수각까지만 왕복해도 꽤 걸음','11/23은 일본 공휴일이라 붐빔'] },
+  umeda: { name:'우메다 쇼핑가', jp:'梅田 · グランフロント大阪', ll:[34.70396,135.49474], img:'img/umeda.jpg',
+    desc:'오사카역 주변에 백화점, 쇼핑몰(그랜드 프런트, 루쿠아, 한큐 백화점), 지하상가가 다 붙어 있음. 오사카 쇼핑 중심.',
+    tips:['백화점 지하 식품관(데파치카)이 선물용 과자 사기 좋음','저녁도 우메다 지하 식당가에서 해결'] },
+  skybldg: { name:'우메다 스카이빌딩 공중정원', jp:'梅田スカイビル 空中庭園', ll:[34.70529,135.49053], img:'img/skybldg.jpg',
+    desc:'빌딩 두 개 꼭대기를 잇는 옥상 전망대. 사방이 뚫려 있어서 일몰이랑 야경 보기 좋음.',
+    tips:['11월 말 일몰이 17시 전이라 16:30쯤 올라가기','입장료 있음'] },
+  fushimi: { name:'후시미이나리 신사', jp:'伏見稲荷大社', ll:[34.96752,135.77971], img:'img/fushimi.jpg',
+    desc:'주홍색 도리이 수천 개가 터널처럼 이어진 신사. 산 전체를 돌면 2~3시간이라 앞부분 센본도리이만 보고 나옴.',
+    tips:['입장 무료','아침 8시대에 가야 사람 덜 나오게 사진 찍힘','걸음 아끼려면 산 위로 올라가지 말 것'] },
+  tofukuji: { name:'도후쿠지', jp:'東福寺', ll:[34.97717,135.77458], img:'img/tofukuji.jpg', leaf:1,
+    desc:'나무 회랑 다리 쓰텐교에서 단풍 계곡을 내려다보는 뷰가 교토 단풍 중에서도 손꼽힘. 대신 엄청 붐빔.',
+    tips:['후시미이나리에서 게이한선 두 정거장','쓰텐교 구역은 유료, 단풍철엔 줄이 김','근처에서 점심 먹고 택시로 이동'] },
+  kiyomizu: { name:'기요미즈데라', jp:'清水寺', ll:[34.99487,135.78504], img:'img/kiyomizu.jpg', leaf:1,
+    desc:'절벽 위로 튀어나온 나무 무대가 상징인 세계유산 절. 무대에서 단풍 바다랑 교토 시내가 내려다보임.',
+    tips:['도후쿠지에서 택시로 10분 정도 (오르막을 안 걸어도 됨)','입장료 있음'] },
+  sannenzaka: { name:'산넨자카·니넨자카', jp:'産寧坂・二年坂', ll:[34.99648,135.78132], img:'img/sannenzaka.jpg',
+    desc:'기요미즈데라에서 내려오는 옛 돌계단 골목. 기념품 가게랑 찻집이 줄지어 있고 야사카탑이 보임.',
+    tips:['내리막 방향으로 걸으니까 덜 힘듦','돌계단이라 넘어지지 않게 조심'] },
+  yasaka: { name:'야사카 신사·기온', jp:'八坂神社・祇園', ll:[35.0036,135.77826], img:'img/yasaka.jpg',
+    desc:'주홍색 누문이 있는 신사랑 그 앞의 전통 거리. 옛 목조 찻집이 많고 운 좋으면 게이코를 봄.',
+    tips:['기온 카페에서 쉬었다가 저녁도 기온에서','18시쯤 게이한선 타면 19시 숙소 도착'] },
+  chionin: { name:'지온인 야간 라이트업', jp:'知恩院', ll:[35.00562,135.78354], img:'img/chionin.jpg', leaf:1,
+    desc:'거대한 산문으로 유명한 절. 단풍철 밤에 정원을 조명으로 밝힘.',
+    kv:[['기간','2026.11.17 – 12.6'],['시간','17:30 – 21:30 (입장 21:00까지)'],['요금','800엔']],
+    tips:['피곤하면 빼도 되는 일정'] },
+  togetsukyo: { name:'도게쓰쿄', jp:'渡月橋', ll:[35.01365,135.67785], img:'img/togetsukyo.jpg', leaf:1,
+    desc:'가쓰라강 위 나무 다리. 뒤쪽 아라시야마 산이 통째로 물들어서 아라시야마 대표 풍경.',
+    tips:['한큐 아라시야마역에서 걸어서 바로'] },
+  tenryuji: { name:'덴류지', jp:'天龍寺', ll:[35.01622,135.67294], img:'img/tenryuji.jpg', leaf:1,
+    desc:'세계유산 선종 사찰. 소겐치 정원 연못에 뒷산 단풍이 비침. 북문이 대나무숲이랑 바로 연결됨.',
+    tips:['정원 입장료 있음','북문으로 나가면 바로 치쿠린'] },
+  chikurin: { name:'대나무숲 치쿠린', jp:'竹林の小径', ll:[35.01674,135.67115], img:'img/chikurin.jpg',
+    desc:'하늘 높이 뻗은 대나무 사이로 난 산책길. 아침 일찍 가야 덜 붐빔.',
+    tips:['점심은 아라시야마 유두부'] },
+  torokko: { name:'사가노 토롯코 열차', jp:'トロッコ嵐山駅', ll:[35.01714,135.67024], img:'img/torokko.jpg', leaf:1,
+    desc:'호즈강 협곡을 따라 천천히 달리는 관광열차, 약 25분. 앉아서 단풍 계곡을 보니까 걸음 아끼기 좋음. 대나무숲 끝에 있는 토롯코 아라시야마역에서 탐.',
+    tips:['단풍철엔 매진이 잦아서 미리 예매','온라인이 매진돼도 당일 역 창구 표가 조금 있음 (수량 제한)'],
+    link:'https://www.sagano-kanko.co.jp/kr' },
+  kameoka: { name:'토롯코 가메오카역', jp:'トロッコ亀岡駅', ll:[35.01311,135.60683], type:'dot',
+    desc:'토롯코 열차 종점. 옆 JR 우마호리역에서 JR을 타고 교토 시내로 돌아감.', tips:[] },
+  nishiki: { name:'니시키 시장', jp:'錦市場', ll:[35.00502,135.76557], img:'img/nishiki.jpg',
+    desc:'"교토의 부엌"이라 불리는 좁은 아케이드 시장. 꼬치, 두유 도넛, 절임 같은 걸 걸으면서 먹음. 근처 시조 가와라마치가 쇼핑가.',
+    tips:['가게들이 저녁 일찍 닫으니까 오후에 가기'] },
+  pontocho: { name:'폰토초', jp:'先斗町', ll:[35.00425,135.77121], img:'img/pontocho.jpg',
+    desc:'가모강 옆 좁은 골목 식당가. 저녁에 등불 켜지면 분위기 좋음.',
+    tips:['가게마다 가격 차이가 커서 메뉴판 보고 들어가기','한큐 가와라마치역이 바로 앞'] },
+};
+
+// 경유하는 역 (사진/설명 없음)
+const S = {
+  nipponbashi: ['닛폰바시역','日本橋駅','지하철 사카이스지선 · 센니치마에선',[34.66672,135.50615]],
+  tanimachi9: ['다니마치9초메역','谷町九丁目駅','센니치마에선 → 다니마치선 환승',[34.66682,135.51640]],
+  tanimachi4: ['다니마치4초메역','谷町四丁目駅','지하철 다니마치선',[34.68190,135.51740]],
+  osakajokoen: ['JR 오사카조코엔역','大阪城公園駅','JR 오사카 순환선',[34.68776,135.53440]],
+  jr_osaka: ['JR 오사카역','大阪駅','JR 오사카 순환선',[34.70249,135.49595]],
+  umeda_m: ['우메다역','梅田駅','지하철 미도스지선',[34.70310,135.49860]],
+  namba_m: ['난바역 (미도스지선)','なんば駅','지하철 미도스지선',[34.66620,135.50070]],
+  kitahama: ['기타하마역','北浜駅','사카이스지선 ↔ 게이한 본선 환승',[34.69130,135.50700]],
+  inari_sta: ['후시미이나리역','伏見稲荷駅','게이한 본선',[34.96889,135.76926]],
+  tofukuji_sta: ['도후쿠지역','東福寺駅','게이한 본선',[34.98107,135.77008]],
+  gion_shijo: ['기온시조역','祇園四条駅','게이한 본선',[35.00350,135.77200]],
+  awaji: ['아와지역','淡路駅','사카이스지선 ↔ 한큐 교토선 환승',[34.73925,135.51689]],
+  katsura: ['가쓰라역','桂駅','한큐 교토선 → 아라시야마선 환승',[34.98004,135.70300]],
+  h_arashiyama: ['한큐 아라시야마역','阪急嵐山駅','한큐 아라시야마선',[35.01066,135.68134]],
+  umahori: ['JR 우마호리역','馬堀駅','JR 사가노선',[35.01069,135.60223]],
+  kyoto_sta: ['JR 교토역','京都駅','JR 사가노선 → JR 교토선 환승',[34.98586,135.75878]],
+  shijo: ['시조역','四条駅','지하철 가라스마선',[35.00357,135.75844]],
+  kawaramachi: ['교토카와라마치역','京都河原町駅','한큐 교토선',[35.00376,135.76961]],
+};
+Object.entries(S).forEach(([k,[name,jp,line,ll]])=>{ P[k] = { name, jp, line, ll, type:'station' }; });
+
+// m: 이 장소까지 오는 방법, v: 거쳐가는 역
+const DAYS = [
+  { d:'11/22', w:'일', title:'도착, 난바·도톤보리', steps:'약 1.2만보', c:'var(--d1)', stops:[
+    { t:'10:00', p:'kix', n:'도착, 입국심사' },
+    { t:'12:15', p:'namba', n:'난바 도착', m:'train', l:'난카이 라피트 약 39분 (11:35 출발 예시)' },
+    { t:'12:30', p:'koko', n:'짐 맡기기', m:'walk', l:'걸어서 약 10분' },
+    { t:'13:00', p:'shinsaibashi', n:'점심, 아케이드 쇼핑', m:'walk', l:'걸어서 약 10분' },
+    { t:'16:00', p:'koko', n:'체크인, 휴식', m:'walk', l:'걸어서 약 15분' },
+    { t:'18:00', p:'dotonbori', n:'저녁, 야경, 돈키호테', m:'walk', l:'걸어서 약 5분' },
+    { t:'21:00', p:'koko', n:'숙소', m:'walk', l:'걸어서 약 5분' } ],
+    note:'첫날이라 가볍게. 공항에서 나오는 시간에 따라 라피트 시간은 앞뒤로 바뀜.' },
+  { d:'11/23', w:'월', title:'오사카성, 우메다', steps:'약 1.6만보', c:'var(--d2)', stops:[
+    { t:'09:00', p:'koko', n:'출발' },
+    { t:'09:30', p:'osakajo', n:'단풍·은행 산책, 천수각', m:'train', v:['nipponbashi','tanimachi9','tanimachi4'], l:'센니치마에선 한 정거장 → 다니마치선 환승, 약 20분' },
+    { t:'13:30', p:'umeda', n:'점심 후 쇼핑', m:'train', v:['osakajokoen','jr_osaka'], l:'공원 동쪽으로 나와서 JR 순환선, 약 10분' },
+    { t:'16:30', p:'skybldg', n:'일몰 전망대', m:'walk', l:'걸어서 약 10분' },
+    { t:'18:30', p:'umeda', n:'저녁 (지하 식당가)', m:'walk', l:'걸어서 약 10분' },
+    { t:'20:00', p:'koko', n:'숙소', m:'train', v:['umeda_m','namba_m'], l:'미도스지선 약 10분 + 걸어서 10분' } ],
+    note:'일본 공휴일(근로감사의 날)이라 사람이 많음. 그래서 교토는 이날 피함.' },
+  { d:'11/24', w:'화', title:'교토 동쪽 (단풍 메인)', steps:'약 1.7만보', c:'var(--d3)', stops:[
+    { t:'07:30', p:'koko', n:'출발' },
+    { t:'08:30', p:'fushimi', n:'센본도리이 (앞부분만)', m:'train', v:['nipponbashi','kitahama','inari_sta'], l:'사카이스지선 → 기타하마에서 게이한 본선 환승, 약 1시간. 특급은 후시미이나리에 안 서니까 정차역 확인' },
+    { t:'10:00', p:'tofukuji', n:'쓰텐교 단풍, 근처 점심', m:'train', v:['inari_sta','tofukuji_sta'], l:'게이한 본선 두 정거장' },
+    { t:'12:30', p:'kiyomizu', n:'무대에서 단풍 구경', m:'taxi', l:'택시 약 10분 (걸음 아끼는 구간)' },
+    { t:'14:30', p:'sannenzaka', n:'돌계단 골목 내려오기', m:'walk', l:'걸어서 약 10분' },
+    { t:'15:30', p:'yasaka', n:'신사, 기온 카페 휴식, 이른 저녁', m:'walk', l:'걸어서 약 10분' },
+    { t:'19:00', p:'koko', n:'숙소', m:'train', v:['gion_shijo','kitahama','nipponbashi'], l:'게이한 본선 → 기타하마에서 사카이스지선 환승, 약 1시간' } ],
+    note:'제일 빡센 날이라 지온인 야간 라이트업은 뺌. 기온에서 일찍 저녁 먹고 19시쯤 숙소 도착.' },
+  { d:'11/25', w:'수', title:'아라시야마, 오후엔 휴식', steps:'약 1.2만보', c:'var(--d4)', stops:[
+    { t:'07:45', p:'koko', n:'출발' },
+    { t:'09:00', p:'togetsukyo', n:'다리랑 단풍 산', m:'train', v:['nipponbashi','awaji','katsura','h_arashiyama'], l:'사카이스지선 → 아와지에서 한큐 교토선 → 가쓰라에서 아라시야마선, 약 1시간 10분' },
+    { t:'09:30', p:'tenryuji', n:'소겐치 정원', m:'walk', l:'걸어서 약 5분' },
+    { t:'10:30', p:'chikurin', n:'대나무숲, 유두부 점심', m:'walk', l:'덴류지 북문으로 바로' },
+    { t:'12:30', p:'torokko', n:'토롯코 열차 탑승', m:'walk', l:'걸어서 약 3분' },
+    { t:'13:00', p:'kameoka', n:'종점, JR로 갈아타기', m:'train', l:'토롯코 열차 약 25분' },
+    { t:'14:30', p:'koko', n:'숙소 복귀, 휴식', m:'train', v:['umahori','kyoto_sta','jr_osaka','umeda_m','namba_m'], l:'우마호리역까지 걸어서 → JR 사가노선 교토역 → JR 교토선 신쾌속 오사카역 → 미도스지선 난바, 약 1시간 20분' },
+    { t:'18:00', p:'dotonbori', n:'저녁 (호텔 근처)', m:'walk', l:'걸어서 약 5분' },
+    { t:'20:00', p:'koko', n:'숙소', m:'walk', l:'걸어서 약 5분' } ],
+    note:'니시키 시장·폰토초는 빼고 토롯코 타고 바로 오사카로 돌아와서 쉼. 토롯코는 단풍철 매진이 잦아서 미리 예매.' },
+  { d:'11/26', w:'목', title:'출국', steps:'약 0.4만보', c:'var(--d5)', stops:[
+    { t:'08:30', p:'koko', n:'체크아웃' },
+    { t:'09:30', p:'namba', n:'라피트 탑승', m:'walk', l:'걸어서 약 10분' },
+    { t:'10:15', p:'kix', n:'체크인, 면세점, 12:50 출발', m:'train', l:'라피트 약 39분' } ],
+    note:'출발 2시간 반 전 공항 도착 기준.' },
+];
+
+const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([34.85, 135.62], 10);
+// Esri 타일: 파일로 직접 열어도(file://) 막히지 않음
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19,
+  attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
+}).addTo(map);
+const zcls = ()=>{ const el = document.getElementById('map'); el.classList.toggle('low', map.getZoom() < 12); el.classList.toggle('mid', map.getZoom() < 14); };
+map.on('zoomend', zcls);
+
+const routeLayer = L.layerGroup().addTo(map);
+const layer = L.layerGroup().addTo(map);
+let cur = 0, selKey = null, markers = {};
+let prog = null;      // 날짜 화면에서 몇 번째 목적지까지 그렸는지 (null = 전체)
+let animTok = 0;      // 진행 중인 애니메이션 취소용
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v.replace(/var\((.*)\)/,'$1')).trim();
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+const same = (a,b) => a[0]===b[0] && a[1]===b[1];
+
+const tabs = document.getElementById('tabs');
+const tabNames = ['전체'].concat(DAYS.map((d,i)=>`${i+1}일차 ${d.d}`));
+tabNames.forEach((n,i)=>{
+  const b = document.createElement('button'); b.className='tab'; b.textContent=n;
+  b.style.setProperty('--c', i ? DAYS[i-1].c : 'var(--fg)');
+  b.onclick = ()=>show(i); tabs.appendChild(b);
+});
+
+function pinHtml(key, nums, color, dim){
+  const p = P[key];
+  const cls = ['pin', p.type==='dot'?'dot':'', p.type==='station'?'sta':'', p.type==='hotel'?'hotel':'', dim?'dim':'', selKey===key?'sel':''].join(' ');
+  const bg = p.img ? `background-image:url('${p.img}')` : '';
+  return `<div class="${cls}" style="--c:${color}"><div class="ph" style="${bg}">${nums?`<span class="no">${nums}</span>`:''}</div><span class="lb">${p.name}</span></div>`;
+}
+
+// i번째 목적지로 가는 구간을 [시작, 끝, 이동수단] 조각으로 나눔
+function legSegs(d, i){
+  const s = d.stops[i], a = P[d.stops[i-1].p].ll, b = P[s.p].ll;
+  let out;
+  if (s.v && s.v.length){
+    const vs = s.v.map(k=>P[k].ll);
+    out = [{a, b:vs[0], m:'walk'}];
+    for (let j=1;j<vs.length;j++) out.push({a:vs[j-1], b:vs[j], m:'train'});
+    out.push({a:vs[vs.length-1], b, m:'walk'});
+  } else out = [{a, b, m:s.m}];
+  return out.filter(g=>!same(g.a,g.b));
+}
+function lineStyle(m, color, thin){
+  return { color, weight: thin?2.5:4, opacity: thin?.55:.85, dashArray: m==='train' ? '8 7' : m==='taxi' ? '2 6' : null, lineCap:'round' };
+}
+function drawLeg(d, i, thin){
+  const color = css(d.c);
+  legSegs(d,i).forEach(g=>L.polyline([g.a,g.b], lineStyle(g.m, color, thin)).addTo(routeLayer));
+}
+function drawDay(d, upto, thin){
+  const last = upto==null ? d.stops.length-1 : upto;
+  for (let i=1;i<=last;i++) drawLeg(d, i, thin);
+}
+
+function show(i){
+  animTok++; cur = i; selKey = null; prog = null; closeDetail();
+  [...tabs.children].forEach((b,j)=>b.classList.toggle('on', i===j));
+  routeLayer.clearLayers(); layer.clearLayers(); markers = {};
+  const sum = document.getElementById('daysum'), list = document.getElementById('list');
+  let bounds = [];
+  if (i===0){
+    DAYS.forEach(d=>drawDay(d, null, true));
+    const seen = new Set();
+    DAYS.forEach(d=>d.stops.forEach(s=>{ if(seen.has(s.p)) return; seen.add(s.p); addMarker(s.p, '', P[s.p].type==='hotel'?'#1d1b19':css(d.c)); bounds.push(P[s.p].ll); }));
+    sum.innerHTML = `<b>4박 5일 전체 동선</b><span>날짜를 누르면 그날 경로만 보여줌</span>`;
+    list.innerHTML = DAYS.map((d,k)=>`<div class="stop" data-day="${k+1}" style="--c:${d.c}"><div class="t">${d.d}<br>${d.w}</div><div class="th" style="background:${d.c};color:#fff;font-weight:700">${k+1}</div><div><div class="nm">${d.title}</div><div class="nt">${d.stops.filter(s=>!P[s.p].type).map(s=>P[s.p].name).join(' · ')||'공항 이동'}</div></div></div>`).join('')
+      + `<div class="note">걸음 수는 1km에 1,400보 정도로 잡은 대충 계산. 하루 2만보 안 넘게 짰음. 날짜별 화면에서 갈아타는 역까지 보임.</div>`;
+    list.querySelectorAll('.stop').forEach(el=>el.onclick=()=>show(+el.dataset.day));
+  } else {
+    const d = DAYS[i-1], color = css(d.c);
+    drawDay(d, null);
+    const nums = {};
+    d.stops.forEach((s,k)=>{ (nums[s.p] = nums[s.p]||[]).push(k+1); });
+    const staSet = new Set(); d.stops.forEach(s=>(s.v||[]).forEach(k=>{ if(!nums[k]) staSet.add(k); }));
+    staSet.forEach(k=>addMarker(k, '', color));
+    Object.keys(nums).forEach(key=>addMarker(key, nums[key].join('·'), P[key].type==='hotel'?'#1d1b19':color));
+    const keys = Object.keys(nums);
+    const spotsLL = keys.filter(k=>!P[k].type).map(k=>P[k].ll);
+    if (spotsLL.length) {
+      const sb = L.latLngBounds(spotsLL).pad(0.6);
+      bounds = keys.concat([...staSet]).map(k=>P[k].ll).filter(ll=>sb.contains(ll));
+    } else bounds = keys.map(k=>P[k].ll);
+    renderSum();
+    let h = '';
+    d.stops.forEach((s,k)=>{
+      const p = P[s.p];
+      if (k>0) {
+        const via = (s.v||[]).map(v=>`<span class="via" data-key="${v}">${P[v].name}</span>`).join('<span class="arr">›</span>');
+        h += `<div class="leg ${s.m}" data-idx="${k}" style="--c:${d.c}"><div></div><div class="bar"></div><div class="lt">${s.l||''}${via?`<div class="vias">${via}</div>`:''}</div></div>`;
+      }
+      h += `<div class="stop" data-idx="${k}" data-key="${s.p}" style="--c:${d.c}"><div class="t">${s.t}</div>${p.img?`<img class="th" src="${p.img}" alt="">`:`<div class="th">${p.type==='dot'?'역':''}</div>`}<div><div class="nm">${p.name}</div><div class="nt">${s.n}</div></div></div>`;
+    });
+    h += `<div class="note">${d.note}</div>`;
+    list.innerHTML = h;
+    list.querySelectorAll('.stop').forEach(el=>el.onclick=()=>goStop(+el.dataset.idx));
+    list.querySelectorAll('.via').forEach(el=>el.onclick=(e)=>{ e.stopPropagation(); select(el.dataset.key, true); });
+  }
+  list.scrollTop = 0;
+  if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.12), { maxZoom: 15 }); setTimeout(zcls, 50);
+}
+
+function renderSum(){
+  const d = DAYS[cur-1];
+  document.getElementById('daysum').innerHTML = `<b>${d.title}</b><span>${d.d} (${d.w}) · ${d.steps}</span>` +
+    (prog!=null ? `<button class="reset" id="reset">전체 경로 보기</button>` : `<span>목적지를 누르면 거기까지만, 다음 목적지를 누르면 이어서 그려줌</span>`);
+  const r = document.getElementById('reset'); if (r) r.onclick = ()=>show(cur);
+}
+
+function addMarker(key, nums, color){
+  const m = L.marker(P[key].ll, { icon: L.divIcon({ html: pinHtml(key, nums, color), className:'', iconSize:[0,0] }), riseOnHover:true, zIndexOffset: P[key].type==='station'? -500 : 0 });
+  m.on('click', (e)=>{ L.DomEvent.stopPropagation(e); markerClick(key); });
+  m._meta = { key, nums, color, dim:false };
+  m.addTo(layer); markers[key] = m;
+}
+function markerClick(key){
+  if (cur===0 || P[key].type==='station') return select(key, false);
+  const d = DAYS[cur-1];
+  const idxs = d.stops.map((s,k)=>s.p===key?k:-1).filter(k=>k>=0);
+  const next = idxs.find(k=>prog!=null && k>prog);
+  goStop(next!=null ? next : idxs[0]);
+}
+
+function refreshPins(){
+  Object.values(markers).forEach(m=>{ const {key,nums,color,dim} = m._meta; m.setIcon(L.divIcon({ html: pinHtml(key, nums, color, dim), className:'', iconSize:[0,0] })); m.setZIndexOffset(key===selKey?1000:(P[key].type==='station'?-500:0)); });
+}
+
+// 지금까지 그린 지점(prog) 기준으로 지도 핀/목록 흐리게
+function updateProgressUI(){
+  const d = DAYS[cur-1];
+  const reached = new Set();
+  d.stops.forEach((s,k)=>{ if (prog==null || k<=prog){ reached.add(s.p); if (k>0) (s.v||[]).forEach(v=>reached.add(v)); } });
+  Object.values(markers).forEach(m=>{ m._meta.dim = !reached.has(m._meta.key); });
+  refreshPins();
+  document.querySelectorAll('#list [data-idx]').forEach(el=>el.classList.toggle('future', prog!=null && +el.dataset.idx > prog));
+  renderSum();
+}
+
+async function goStop(k){
+  if (cur===0) return;
+  const d = DAYS[cur-1], tok = ++animTok;
+  const key = d.stops[k].p;
+  markListSel(k);
+  if (prog==null || k<=prog || k===0){
+    // 이전 구간까지만 정적으로 그리기
+    prog = k; routeLayer.clearLayers(); drawDay(d, k); updateProgressUI();
+    select(key, true);
+    return;
+  }
+  // 다음 목적지: 선을 그리면서 지도가 따라감
+  closeDetail(true);
+  const from = prog;
+  for (let i=from+1; i<=k; i++){
+    const ok = await animateLeg(d, i, tok);
+    if (!ok || tok!==animTok) return;
+    prog = i; updateProgressUI(); markListSel(i);
+  }
+  if (tok!==animTok) return;
+  select(key, true);
+}
+
+function markListSel(k){
+  document.querySelectorAll('.stop[data-idx]').forEach(el=>el.classList.toggle('sel', +el.dataset.idx===k));
+  const li = document.querySelector(`.stop[data-idx="${k}"]`); if (li) li.scrollIntoView({ block:'nearest', behavior:'smooth' });
+}
+
+async function animateLeg(d, i, tok){
+  const segs = legSegs(d, i), color = css(d.c);
+  if (!segs.length) return true;
+  const pts = segs.flatMap(g=>[g.a,g.b]);
+  const z = Math.max(11, Math.min(15, map.getBoundsZoom(L.latLngBounds(pts).pad(0.25)) + 1));
+  map.flyTo(segs[0].a, z, { duration: .6 }); await wait(650);
+  for (const g of segs){
+    if (tok!==animTok) return false;
+    await animSeg(g, color, tok);
+  }
+  return tok===animTok;
+}
+function animSeg(g, color, tok){
+  return new Promise(res=>{
+    const dist = map.distance(g.a, g.b);
+    const dur = Math.max(450, Math.min(2200, dist / (g.m==='walk' ? 1.1 : 10)));
+    const line = L.polyline([g.a, g.a], lineStyle(g.m, color)).addTo(routeLayer);
+    const t0 = performance.now();
+    const step = t=>{
+      if (tok!==animTok){ res(); return; }
+      const r = Math.min(1, (t-t0)/dur), e = r<.5 ? 2*r*r : 1-Math.pow(-2*r+2,2)/2;
+      const p = [g.a[0]+(g.b[0]-g.a[0])*e, g.a[1]+(g.b[1]-g.a[1])*e];
+      line.setLatLngs([g.a, p]);
+      map.panTo(p, { animate:false });
+      if (r<1) requestAnimationFrame(step); else res();
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+function select(key, fly){
+  selKey = key; refreshPins();
+  if (P[key].type!=='station' && cur===0) document.querySelectorAll('.stop[data-key]').forEach(el=>el.classList.toggle('sel', el.dataset.key===key));
+  const p = P[key];
+  const visits = [];
+  DAYS.forEach((d,k)=>d.stops.forEach(s=>{
+    if (!(cur===0 || cur===k+1)) return;
+    if (s.p===key) visits.push(`${d.d} ${s.t} · ${s.n}`);
+    else if ((s.v||[]).includes(key)) visits.push(`${d.d} ${P[s.p].name} 가는 길`);
+  }));
+  const g = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.jp.split(' · ')[0] || p.name)}`;
+  const el = document.getElementById('detail');
+  if (p.type==='station') {
+    el.innerHTML = `<button class="x" aria-label="닫기" style="background:rgba(0,0,0,.35)">×</button><div class="bd"><h2>${p.name}<span class="jp">${p.jp}</span></h2><div class="when"><span>${p.line}</span>${visits.map(v=>`<span>${v}</span>`).join('')}</div><a class="btn" href="${g}" target="_blank" rel="noopener">구글 지도</a></div>`;
+  } else {
+  el.innerHTML = `${p.img?`<img src="${p.img}" alt="">`:''}<button class="x" aria-label="닫기">×</button>
+    <div class="bd"><h2>${p.name}<span class="jp">${p.jp}</span></h2>
+    <div class="when">${p.leaf?'<span style="background:#fde8e4;color:#b42318">단풍 명소</span>':''}${visits.map(v=>`<span>${v}</span>`).join('')}</div>
+    <p>${p.desc}</p>
+    ${p.kv?`<div class="kv">${p.kv.map(([a,b])=>`<div>${a}</div><div>${b}</div>`).join('')}</div>`:''}
+    ${p.tips&&p.tips.length?`<ul>${p.tips.map(t=>`<li>${t}</li>`).join('')}</ul>`:''}
+    <a class="btn" href="${g}" target="_blank" rel="noopener">구글 지도</a>${p.link?`<a class="btn ghost" href="${p.link}" target="_blank" rel="noopener">${key==='koko'?'부킹닷컴':'공식 사이트'}</a>`:''}</div>`;
+  if (!p.img) el.querySelector('.x').style.background = 'rgba(0,0,0,.35)';
+  }
+  el.classList.add('open'); el.scrollTop = 0;
+  el.querySelector('.x').onclick = ()=>closeDetail();
+  if (fly) map.flyTo(p.ll, Math.max(map.getZoom(), 14), { duration: .6 });
+}
+function closeDetail(keepSel){
+  document.getElementById('detail').classList.remove('open');
+  if (selKey){ selKey = null; refreshPins(); }
+  if (!keepSel && cur===0) document.querySelectorAll('.stop.sel').forEach(e=>e.classList.remove('sel'));
+}
+map.on('click', ()=>closeDetail());
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDetail(); });
+
+show(0);
+</script>
+</body>
+</html>
