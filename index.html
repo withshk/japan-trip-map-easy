@@ -113,8 +113,8 @@
 <div class="app">
   <aside>
     <header>
-      <h1>간사이 단풍 여행</h1>
-      <p>2026.11.22 (일) – 11.26 (목) · 오사카·교토 · 숙소 KOKO HOTEL 난바 센니치마에</p>
+      <h1>간사이 단풍 여행 <span style="font-size:13px;font-weight:600;color:var(--accent)">여유 버전</span></h1>
+      <p>2026.11.22 (일) – 11.26 (목) · 오사카·교토 · 숙소 RS Amemura · 하루 1.5만보 이하 · <a href="https://withshk.github.io/japan-trip-map/" style="color:var(--accent)">기본 버전 보기</a></p>
     </header>
     <div class="tabs" id="tabs"></div>
     <div class="daysum" id="daysum"></div>
@@ -134,13 +134,18 @@ const P = {
     desc:'입국하고 나가는 공항. 공항역에서 난카이 라피트를 타면 난바까지 바로 감.',
     tips:['라피트로 난바까지 약 34~39분','출국 날은 출발 2시간 반 전쯤 도착 목표'] },
   namba: { name:'난카이 난바역', jp:'なんば駅', ll:[34.6628,135.5016], type:'dot',
-    desc:'공항 열차(라피트)가 출발하고 도착하는 역. KOKO 호텔까지 걸어서 10분 정도.',
+    desc:'공항 열차(라피트)가 출발하고 도착하는 역. 숙소까지 걸어서 15분 정도.',
     tips:['라피트는 전석 지정석이라 표를 미리 사두면 편함'] },
-  koko: { name:'KOKO HOTEL 난바 센니치마에', jp:'KOKO HOTEL Osaka Namba Sennichimae', ll:[34.66731,135.50532], type:'hotel', img:'img/koko.jpg',
-    desc:'4박 내내 묵는 숙소. 도톤보리 바로 옆이고 닛폰바시역에서 100m라 교토 가는 지하철 타기도 편함.',
-    kv:[['등급','3성급, 평점 8.7'],['방','스탠다드 트윈 (싱글침대 2개, 욕조)'],['체크인','15:00부터'],['체크아웃','11:00까지'],['요금','4박 ₩587,292 (1박 약 14.7만)'],['취소','11/21 전까지 무료, 결제는 11/19'],['조식','₩15,114 추가 (뷔페)'],['가까운 역','닛폰바시역 100m · 난바역 700m'],['점수','위치 9.5 · 편안함 9.1 · 청결 9.0']],
-    tips:['첫날 체크인 전에 짐 맡길 수 있음 (수하물 보관)','10/27 부킹닷컴 기준이라 예약할 때 가격 다시 확인'],
-    link:'https://www.booking.com/hotel/jp/koko-osaka-namba-sennichimae.ko.html' },
+  nest: { name:'짐 보관소 n·e·s·t', jp:'n・e・s・t 南海なんば', ll:[34.66335,135.50205], type:'dot',
+    desc:'난카이 난바역 2층 중앙 개찰구 쪽에 있는 짐 보관 카운터. 공항에서 라피트 내리면 역 밖으로 안 나가고 바로 맡길 수 있음.',
+    kv:[['위치','난카이 난바역 2층 중앙 개찰구 쪽'],['요금','1개 하루 800엔 (크기 상관없음)'],['크기 제한','세 변 합 220cm, 30kg 이하'],['보관 시간','10:00 – 20:00'],['결제','카드, 교통카드(ICOCA 등), PayPay']],
+    tips:['16시 체크인 전에 찾아서 숙소로 이동','운영 시간은 출처마다 조금 달라서 (10–20시 / 9–21시) 가기 전에 공식 사이트 확인','근처에 코인로커도 많음 (2층 중앙 개찰구 주변)'],
+    link:'https://www.howto-osaka.com/en/nest/' },
+  rs: { name:'RS Amemura', jp:'RS Amemura', ll:[34.66968,135.49733], type:'hotel', img:'img/rs_amemura.jpg',
+    desc:'4박 내내 묵는 숙소 (아고다 예약 확정). 아메리카무라 쪽 아파트형 숙소라 방을 통째로 쓰고 주방이랑 세탁기가 있음. 도톤보리까지 걸어서 5분 정도.',
+    kv:[['형태','아파트형 숙소'],['체크인','16:00 – 24:00'],['체크아웃','11:00까지'],['시설','주방, 세탁기, 무료 Wi-Fi, 엘리베이터'],['가까운 역','오사카난바역 400m · 지하철 난바역 650m'],['주소','2-10-28 Shinsaibashi, Chuo-ku, Osaka'],['평점','부킹닷컴 8.8 (위치 9.5 · 청결 9.0 · 가성비 9.2)']],
+    tips:['첫날 짐은 난카이 난바역 n·e·s·t에 맡겼다가 16시 체크인 전에 찾아오기','아파트형이라 출입 방법 안내 메시지를 미리 확인','세탁기가 있어서 옷을 적게 챙겨도 됨'],
+    link:'https://www.booking.com/hotel/jp/rs-xin-zhai-qiao-amemera.ko.html' },
   shinsaibashi: { name:'신사이바시스지', jp:'心斎橋筋商店街', ll:[34.67422,135.50137], img:'img/shinsaibashi.jpg',
     desc:'지붕 덮인 긴 상점가. 드럭스토어, 브랜드, 잡화가 쭉 이어지고 남쪽 끝이 도톤보리랑 붙어 있음. 비 와도 상관없음.',
     tips:['면세는 한 가게에서 하루 5,000엔 이상 사고 여권 보여주면 됨','점심은 근처에서 오코노미야키나 쿠시카츠'] },
@@ -161,7 +166,7 @@ const P = {
     tips:['입장 무료','아침 8시대에 가야 사람 덜 나오게 사진 찍힘','걸음 아끼려면 산 위로 올라가지 말 것'] },
   tofukuji: { name:'도후쿠지', jp:'東福寺', ll:[34.97717,135.77458], img:'img/tofukuji.jpg', leaf:1,
     desc:'나무 회랑 다리 쓰텐교에서 단풍 계곡을 내려다보는 뷰가 교토 단풍 중에서도 손꼽힘. 대신 엄청 붐빔.',
-    tips:['후시미이나리에서 게이한선 두 정거장','쓰텐교 구역은 유료, 단풍철엔 줄이 김','근처에서 점심 먹고 택시로 이동'] },
+    tips:['게이한 도후쿠지역에서 걸어서 10분 정도','쓰텐교 구역은 유료, 단풍철엔 줄이 김','근처에서 점심 먹고 택시로 이동'] },
   kiyomizu: { name:'기요미즈데라', jp:'清水寺', ll:[34.99487,135.78504], img:'img/kiyomizu.jpg', leaf:1,
     desc:'절벽 위로 튀어나온 나무 무대가 상징인 세계유산 절. 무대에서 단풍 바다랑 교토 시내가 내려다보임.',
     tips:['도후쿠지에서 택시로 10분 정도 (오르막을 안 걸어도 됨)','입장료 있음'] },
@@ -170,7 +175,7 @@ const P = {
     tips:['내리막 방향으로 걸으니까 덜 힘듦','돌계단이라 넘어지지 않게 조심'] },
   yasaka: { name:'야사카 신사·기온', jp:'八坂神社・祇園', ll:[35.0036,135.77826], img:'img/yasaka.jpg',
     desc:'주홍색 누문이 있는 신사랑 그 앞의 전통 거리. 옛 목조 찻집이 많고 운 좋으면 게이코를 봄.',
-    tips:['기온 카페에서 쉬었다가 저녁도 기온에서','18시쯤 게이한선 타면 19시 숙소 도착'] },
+    tips:['기온 카페에서 쉬었다가 저녁도 기온에서','18시쯤 게이한선 타면 19시 전에 숙소 도착'] },
   chionin: { name:'지온인 야간 라이트업', jp:'知恩院', ll:[35.00562,135.78354], img:'img/chionin.jpg', leaf:1,
     desc:'거대한 산문으로 유명한 절. 단풍철 밤에 정원을 조명으로 밝힘.',
     kv:[['기간','2026.11.17 – 12.6'],['시간','17:30 – 21:30 (입장 21:00까지)'],['요금','800엔']],
@@ -206,7 +211,9 @@ const S = {
   osakajokoen: ['JR 오사카조코엔역','大阪城公園駅','JR 오사카 순환선',[34.68776,135.53440]],
   jr_osaka: ['JR 오사카역','大阪駅','JR 오사카 순환선',[34.70249,135.49595]],
   umeda_m: ['우메다역','梅田駅','지하철 미도스지선',[34.70310,135.49860]],
-  namba_m: ['난바역 (미도스지선)','なんば駅','지하철 미도스지선',[34.66620,135.50070]],
+  namba_m: ['지하철 난바역','なんば駅','미도스지선 · 센니치마에선',[34.66620,135.50070]],
+  yodoyabashi: ['요도야바시역','淀屋橋駅','미도스지선 ↔ 게이한 본선 환승',[34.69250,135.50129]],
+  hankyu_umeda: ['한큐 오사카우메다역','大阪梅田駅','미도스지선 ↔ 한큐 교토선 환승',[34.70550,135.49830]],
   kitahama: ['기타하마역','北浜駅','사카이스지선 ↔ 게이한 본선 환승',[34.69130,135.50700]],
   inari_sta: ['후시미이나리역','伏見稲荷駅','게이한 본선',[34.96889,135.76926]],
   tofukuji_sta: ['도후쿠지역','東福寺駅','게이한 본선',[34.98107,135.77008]],
@@ -223,46 +230,46 @@ Object.entries(S).forEach(([k,[name,jp,line,ll]])=>{ P[k] = { name, jp, line, ll
 
 // m: 이 장소까지 오는 방법, v: 거쳐가는 역
 const DAYS = [
-  { d:'11/22', w:'일', title:'도착, 난바·도톤보리', steps:'약 1.2만보', c:'var(--d1)', stops:[
+  { d:'11/22', w:'일', title:'도착, 난바·도톤보리', steps:'약 1.3만보', c:'var(--d1)', stops:[
     { t:'10:00', p:'kix', n:'도착, 입국심사' },
     { t:'12:15', p:'namba', n:'난바 도착', m:'train', l:'난카이 라피트 약 39분 (11:35 출발 예시)' },
-    { t:'12:30', p:'koko', n:'짐 맡기기', m:'walk', l:'걸어서 약 10분' },
-    { t:'13:00', p:'shinsaibashi', n:'점심, 아케이드 쇼핑', m:'walk', l:'걸어서 약 10분' },
-    { t:'16:00', p:'koko', n:'체크인, 휴식', m:'walk', l:'걸어서 약 15분' },
+    { t:'12:20', p:'nest', n:'짐 맡기기 (1개 800엔)', m:'walk', l:'역 안 2층, 바로' },
+    { t:'13:00', p:'shinsaibashi', n:'점심, 아케이드 쇼핑', m:'walk', l:'걸어서 약 15분' },
+    { t:'15:30', p:'nest', n:'짐 찾기', m:'walk', l:'걸어서 약 15분' },
+    { t:'16:00', p:'rs', n:'체크인, 휴식', m:'walk', l:'캐리어 끌고 걸어서 약 15분' },
     { t:'18:00', p:'dotonbori', n:'저녁, 야경, 돈키호테', m:'walk', l:'걸어서 약 5분' },
-    { t:'21:00', p:'koko', n:'숙소', m:'walk', l:'걸어서 약 5분' } ],
-    note:'첫날이라 가볍게. 공항에서 나오는 시간에 따라 라피트 시간은 앞뒤로 바뀜.' },
-  { d:'11/23', w:'월', title:'오사카성, 우메다', steps:'약 1.6만보', c:'var(--d2)', stops:[
-    { t:'09:00', p:'koko', n:'출발' },
-    { t:'09:30', p:'osakajo', n:'단풍·은행 산책, 천수각', m:'train', v:['nipponbashi','tanimachi9','tanimachi4'], l:'센니치마에선 한 정거장 → 다니마치선 환승, 약 20분' },
-    { t:'13:30', p:'umeda', n:'점심 후 쇼핑', m:'train', v:['osakajokoen','jr_osaka'], l:'공원 동쪽으로 나와서 JR 순환선, 약 10분' },
-    { t:'16:30', p:'skybldg', n:'일몰 전망대', m:'walk', l:'걸어서 약 10분' },
-    { t:'18:30', p:'umeda', n:'저녁 (지하 식당가)', m:'walk', l:'걸어서 약 10분' },
-    { t:'20:00', p:'koko', n:'숙소', m:'train', v:['umeda_m','namba_m'], l:'미도스지선 약 10분 + 걸어서 10분' } ],
-    note:'일본 공휴일(근로감사의 날)이라 사람이 많음. 그래서 교토는 이날 피함.' },
-  { d:'11/24', w:'화', title:'교토 동쪽 (단풍 메인)', steps:'약 1.7만보', c:'var(--d3)', stops:[
-    { t:'07:30', p:'koko', n:'출발' },
-    { t:'08:30', p:'fushimi', n:'센본도리이 (앞부분만)', m:'train', v:['nipponbashi','kitahama','inari_sta'], l:'사카이스지선 → 기타하마에서 게이한 본선 환승, 약 1시간. 특급은 후시미이나리에 안 서니까 정차역 확인' },
-    { t:'10:00', p:'tofukuji', n:'쓰텐교 단풍, 근처 점심', m:'train', v:['inari_sta','tofukuji_sta'], l:'게이한 본선 두 정거장' },
+    { t:'21:00', p:'rs', n:'숙소', m:'walk', l:'걸어서 약 5분' } ],
+    note:'체크인이 16시라 그 전엔 난카이 난바역 n·e·s·t에 짐 맡기고 가볍게 돌아다니기.' },
+  { d:'11/23', w:'월', title:'오사카성, 우메다 쇼핑', steps:'약 1.4만보', c:'var(--d2)', stops:[
+    { t:'09:30', p:'rs', n:'출발' },
+    { t:'10:00', p:'osakajo', n:'단풍·은행 산책, 천수각', m:'train', v:['namba_m','tanimachi9','tanimachi4'], l:'지하철 난바역 → 센니치마에선 → 다니마치9초메에서 다니마치선, 약 25분' },
+    { t:'12:30', p:'umeda', n:'점심, 쇼핑', m:'train', v:['osakajokoen','jr_osaka'], l:'공원 동쪽으로 나와서 JR 순환선, 약 10분' },
+    { t:'17:00', p:'rs', n:'숙소 복귀, 휴식', m:'train', v:['umeda_m','namba_m'], l:'미도스지선 약 10분 + 걸어서 10분' },
+    { t:'18:30', p:'dotonbori', n:'저녁 (숙소 근처)', m:'walk', l:'걸어서 약 5분' },
+    { t:'20:00', p:'rs', n:'숙소', m:'walk', l:'걸어서 약 5분' } ],
+    note:'스카이빌딩 전망대는 오가는 길이 길어서 뺌. 쇼핑 끝나면 일찍 들어가서 쉬고 저녁은 숙소 근처에서.' },
+  { d:'11/24', w:'화', title:'교토 동쪽 단풍', steps:'약 1.4만보', c:'var(--d3)', stops:[
+    { t:'08:00', p:'rs', n:'출발' },
+    { t:'09:00', p:'tofukuji', n:'쓰텐교 단풍, 근처 점심', m:'train', v:['namba_m','yodoyabashi','tofukuji_sta'], l:'미도스지선 → 요도야바시에서 게이한 본선, 약 1시간. 특급은 도후쿠지역에 안 서니까 정차역 확인' },
     { t:'12:30', p:'kiyomizu', n:'무대에서 단풍 구경', m:'taxi', l:'택시 약 10분 (걸음 아끼는 구간)' },
-    { t:'14:30', p:'sannenzaka', n:'돌계단 골목 내려오기', m:'walk', l:'걸어서 약 10분' },
-    { t:'15:30', p:'yasaka', n:'신사, 기온 카페 휴식, 이른 저녁', m:'walk', l:'걸어서 약 10분' },
-    { t:'19:00', p:'koko', n:'숙소', m:'train', v:['gion_shijo','kitahama','nipponbashi'], l:'게이한 본선 → 기타하마에서 사카이스지선 환승, 약 1시간' } ],
-    note:'제일 빡센 날이라 지온인 야간 라이트업은 뺌. 기온에서 일찍 저녁 먹고 19시쯤 숙소 도착.' },
+    { t:'14:00', p:'sannenzaka', n:'돌계단 골목 내려오기', m:'walk', l:'걸어서 약 10분' },
+    { t:'15:00', p:'yasaka', n:'신사, 기온 카페 휴식, 이른 저녁', m:'walk', l:'걸어서 약 10분' },
+    { t:'19:00', p:'rs', n:'숙소', m:'train', v:['gion_shijo','yodoyabashi','namba_m'], l:'게이한 본선 → 요도야바시에서 미도스지선, 약 1시간' } ],
+    note:'후시미이나리랑 지온인 야간 라이트업은 뺌. 단풍 명소 두 곳(도후쿠지, 기요미즈데라)만 보고 일찍 저녁 먹고 들어감.' },
   { d:'11/25', w:'수', title:'아라시야마, 오후엔 휴식', steps:'약 1.2만보', c:'var(--d4)', stops:[
-    { t:'07:45', p:'koko', n:'출발' },
-    { t:'09:00', p:'togetsukyo', n:'다리랑 단풍 산', m:'train', v:['nipponbashi','awaji','katsura','h_arashiyama'], l:'사카이스지선 → 아와지에서 한큐 교토선 → 가쓰라에서 아라시야마선, 약 1시간 10분' },
+    { t:'07:45', p:'rs', n:'출발' },
+    { t:'09:00', p:'togetsukyo', n:'다리랑 단풍 산', m:'train', v:['namba_m','hankyu_umeda','katsura','h_arashiyama'], l:'미도스지선 우메다 → 한큐 교토선 → 가쓰라에서 아라시야마선, 약 1시간 10분' },
     { t:'09:30', p:'tenryuji', n:'소겐치 정원', m:'walk', l:'걸어서 약 5분' },
     { t:'10:30', p:'chikurin', n:'대나무숲, 유두부 점심', m:'walk', l:'덴류지 북문으로 바로' },
     { t:'12:30', p:'torokko', n:'토롯코 열차 탑승', m:'walk', l:'걸어서 약 3분' },
     { t:'13:00', p:'kameoka', n:'종점, JR로 갈아타기', m:'train', l:'토롯코 열차 약 25분' },
-    { t:'14:30', p:'koko', n:'숙소 복귀, 휴식', m:'train', v:['umahori','kyoto_sta','jr_osaka','umeda_m','namba_m'], l:'우마호리역까지 걸어서 → JR 사가노선 교토역 → JR 교토선 신쾌속 오사카역 → 미도스지선 난바, 약 1시간 20분' },
-    { t:'18:00', p:'dotonbori', n:'저녁 (호텔 근처)', m:'walk', l:'걸어서 약 5분' },
-    { t:'20:00', p:'koko', n:'숙소', m:'walk', l:'걸어서 약 5분' } ],
+    { t:'14:30', p:'rs', n:'숙소 복귀, 휴식', m:'train', v:['umahori','kyoto_sta','jr_osaka','umeda_m','namba_m'], l:'우마호리역까지 걸어서 → JR 사가노선 교토역 → JR 교토선 오사카역 → 미도스지선 난바, 약 1시간 20분' },
+    { t:'18:00', p:'dotonbori', n:'저녁 (숙소 근처)', m:'walk', l:'걸어서 약 5분' },
+    { t:'20:00', p:'rs', n:'숙소', m:'walk', l:'걸어서 약 5분' } ],
     note:'니시키 시장·폰토초는 빼고 토롯코 타고 바로 오사카로 돌아와서 쉼. 토롯코는 단풍철 매진이 잦아서 미리 예매.' },
   { d:'11/26', w:'목', title:'출국', steps:'약 0.4만보', c:'var(--d5)', stops:[
-    { t:'08:30', p:'koko', n:'체크아웃' },
-    { t:'09:30', p:'namba', n:'라피트 탑승', m:'walk', l:'걸어서 약 10분' },
+    { t:'08:30', p:'rs', n:'체크아웃 (11시까지)' },
+    { t:'09:30', p:'namba', n:'라피트 탑승', m:'walk', l:'캐리어 끌고 걸어서 약 15분' },
     { t:'10:15', p:'kix', n:'체크인, 면세점, 12:50 출발', m:'train', l:'라피트 약 39분' } ],
     note:'출발 2시간 반 전 공항 도착 기준.' },
 ];
@@ -336,7 +343,7 @@ function show(i){
     DAYS.forEach(d=>d.stops.forEach(s=>{ if(seen.has(s.p)) return; seen.add(s.p); addMarker(s.p, '', P[s.p].type==='hotel'?'#1d1b19':css(d.c)); bounds.push(P[s.p].ll); }));
     sum.innerHTML = `<b>4박 5일 전체 동선</b><span>날짜를 누르면 그날 경로만 보여줌</span>`;
     list.innerHTML = DAYS.map((d,k)=>`<div class="stop" data-day="${k+1}" style="--c:${d.c}"><div class="t">${d.d}<br>${d.w}</div><div class="th" style="background:${d.c};color:#fff;font-weight:700">${k+1}</div><div><div class="nm">${d.title}</div><div class="nt">${d.stops.filter(s=>!P[s.p].type).map(s=>P[s.p].name).join(' · ')||'공항 이동'}</div></div></div>`).join('')
-      + `<div class="note">걸음 수는 1km에 1,400보 정도로 잡은 대충 계산. 하루 2만보 안 넘게 짰음. 날짜별 화면에서 갈아타는 역까지 보임.</div>`;
+      + `<div class="note">걸음 수는 1km에 1,400보 정도로 잡은 대충 계산. 여유 버전은 하루 1.5만보 안 넘게 짰음 (평균 약 1.1만보). 날짜별 화면에서 갈아타는 역까지 보임.</div>`;
     list.querySelectorAll('.stop').forEach(el=>el.onclick=()=>show(+el.dataset.day));
   } else {
     const d = DAYS[i-1], color = css(d.c);
@@ -486,7 +493,7 @@ function select(key, fly){
     <p>${p.desc}</p>
     ${p.kv?`<div class="kv">${p.kv.map(([a,b])=>`<div>${a}</div><div>${b}</div>`).join('')}</div>`:''}
     ${p.tips&&p.tips.length?`<ul>${p.tips.map(t=>`<li>${t}</li>`).join('')}</ul>`:''}
-    <a class="btn" href="${g}" target="_blank" rel="noopener">구글 지도</a>${p.link?`<a class="btn ghost" href="${p.link}" target="_blank" rel="noopener">${key==='koko'?'부킹닷컴':'공식 사이트'}</a>`:''}</div>`;
+    <a class="btn" href="${g}" target="_blank" rel="noopener">구글 지도</a>${p.link?`<a class="btn ghost" href="${p.link}" target="_blank" rel="noopener">${key==='rs'?'숙소 정보':key==='nest'?'n·e·s·t 안내':'공식 사이트'}</a>`:''}</div>`;
   if (!p.img) el.querySelector('.x').style.background = 'rgba(0,0,0,.35)';
   }
   el.classList.add('open'); el.scrollTop = 0;
